@@ -61,7 +61,7 @@ import (
 )
 
 const (
-	expressionIndexPrefix = "_V$"
+	ExpressionIndexPrefix = "_V$"
 	changingColumnPrefix  = "_Col$_"
 	changingIndexPrefix   = "_Idx$_"
 )
@@ -4464,7 +4464,7 @@ func buildHiddenColumnInfo(ctx sessionctx.Context, indexPartSpecifications []*as
 		if idxPart.Expr == nil {
 			continue
 		}
-		idxPart.Column = &ast.ColumnName{Name: model.NewCIStr(fmt.Sprintf("%s_%s_%d", expressionIndexPrefix, indexName, i))}
+		idxPart.Column = &ast.ColumnName{Name: model.NewCIStr(fmt.Sprintf("%s_%s_%d", ExpressionIndexPrefix, indexName, i))}
 		// Check whether the hidden columns have existed.
 		col := table.FindCol(existCols, idxPart.Column.Name.L)
 		if col != nil {

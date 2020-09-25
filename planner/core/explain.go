@@ -21,6 +21,7 @@ import (
 
 	"github.com/pingcap/parser/ast"
 	"github.com/pingcap/parser/model"
+	"github.com/pingcap/tidb/ddl"
 	"github.com/pingcap/tidb/expression"
 	"github.com/pingcap/tidb/expression/aggregation"
 	"github.com/pingcap/tidb/infoschema"
@@ -89,7 +90,11 @@ func (p *PhysicalIndexScan) AccessObject() string {
 	if len(p.Index.Columns) > 0 {
 		buffer.WriteString(", index:" + p.Index.Name.O + "(")
 		for i, idxCol := range p.Index.Columns {
-			buffer.WriteString(idxCol.Name.O)
+			if strings.HasPrefix(idxCol.Name.O, ddl.ExpressionIndexPrefix) {
+				buffer.WriteString(p.Table.Columns[idxCol.Offset].GeneratedExprString)
+			} else {
+				buffer.WriteString(idxCol.Name.O)
+			}
 			if i+1 < len(p.Index.Columns) {
 				buffer.WriteString(", ")
 			}
@@ -901,6 +906,7 @@ func (p *LogicalTableScan) ExplainInfo() string {
 
 // ExplainInfo implements Plan interface.
 func (p *LogicalIndexScan) ExplainInfo() string {
+	fmt.Println("LogicalIndexScan ExplainInfo")
 	buffer := bytes.NewBufferString(p.Source.ExplainInfo())
 	index := p.Index
 	if len(index.Columns) > 0 {

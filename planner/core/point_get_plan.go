@@ -17,6 +17,7 @@ import (
 	"bytes"
 	"fmt"
 	math2 "math"
+	"strings"
 
 	"github.com/pingcap/errors"
 	"github.com/pingcap/parser/ast"
@@ -25,6 +26,7 @@ import (
 	"github.com/pingcap/parser/mysql"
 	"github.com/pingcap/parser/opcode"
 	"github.com/pingcap/parser/terror"
+	"github.com/pingcap/tidb/ddl"
 	"github.com/pingcap/tidb/expression"
 	"github.com/pingcap/tidb/infoschema"
 	"github.com/pingcap/tidb/kv"
@@ -128,7 +130,11 @@ func (p *PointGetPlan) AccessObject() string {
 			buffer.WriteString(", index:" + p.IndexInfo.Name.O + "(")
 		}
 		for i, idxCol := range p.IndexInfo.Columns {
-			buffer.WriteString(idxCol.Name.O)
+			if strings.HasPrefix(idxCol.Name.O, ddl.ExpressionIndexPrefix) {
+				buffer.WriteString(p.TblInfo.Columns[idxCol.Offset].GeneratedExprString)
+			} else {
+				buffer.WriteString(idxCol.Name.O)
+			}
 			if i+1 < len(p.IndexInfo.Columns) {
 				buffer.WriteString(", ")
 			}
@@ -294,7 +300,11 @@ func (p *BatchPointGetPlan) AccessObject() string {
 			buffer.WriteString(", index:" + p.IndexInfo.Name.O + "(")
 		}
 		for i, idxCol := range p.IndexInfo.Columns {
-			buffer.WriteString(idxCol.Name.O)
+			if strings.HasPrefix(idxCol.Name.O, ddl.ExpressionIndexPrefix) {
+				buffer.WriteString(p.TblInfo.Columns[idxCol.Offset].GeneratedExprString)
+			} else {
+				buffer.WriteString(idxCol.Name.O)
+			}
 			if i+1 < len(p.IndexInfo.Columns) {
 				buffer.WriteString(", ")
 			}
